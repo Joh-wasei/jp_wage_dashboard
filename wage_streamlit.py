@@ -22,7 +22,6 @@ def page1():
     df_pref_map = df_pref_ind[(df_pref_ind['年齢'] == '年齢計') & (df_pref_ind['集計年'] == 2019)]
     df_pref_map = pd.merge(df_pref_map, jp_lat_lon, on='都道府県名')
     df_pref_map['一人当たり賃金（相対値）'] = ((df_pref_map['一人当たり賃金（万円）']-df_pref_map['一人当たり賃金（万円）'].min())/(df_pref_map['一人当たり賃金（万円）'].max()-df_pref_map['一人当たり賃金（万円）'].min()))
-    df_pref_map
 
     view = pdk.ViewState(
         longitude=139.691648,
