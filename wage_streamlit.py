@@ -14,12 +14,12 @@ df_jp_category = pd.read_csv('./csv_data/雇用_医療福祉_一人当たり賃�
 df_pref_ind = pd.read_csv('./csv_data/雇用_医療福祉_一人当たり賃金_都道府県_全産業.csv', encoding='shift_jis')
 
 def page1():
-    st.header('■2019年：一人当たり平均賃金のヒートマップ')
+    st.header('■2020年（最新）：一人当たり平均賃金のヒートマップ')
 
     jp_lat_lon = pd.read_csv('./pref_lat_lon.csv')
     jp_lat_lon = jp_lat_lon.rename(columns={'pref_name': '都道府県名'})
 
-    df_pref_map = df_pref_ind[(df_pref_ind['年齢'] == '年齢計') & (df_pref_ind['集計年'] == 2019)]
+    df_pref_map = df_pref_ind[(df_pref_ind['年齢'] == '年齢計') & (df_pref_ind['集計年'] == 2020)]
     df_pref_map = pd.merge(df_pref_map, jp_lat_lon, on='都道府県名')
     df_pref_map['一人当たり賃金（相対値）'] = ((df_pref_map['一人当たり賃金（万円）']-df_pref_map['一人当たり賃金（万円）'].min())/(df_pref_map['一人当たり賃金（万円）'].max()-df_pref_map['一人当たり賃金（万円）'].min()))
 
@@ -36,26 +36,47 @@ def page1():
         opacity=0.4,
         get_position=["lon", "lat"],
         threshold=0.3,
-        get_weight='一人当たり賃金（相対値）'
+        get_weight='一人当たり賃金（相対値）',
     )
 
-    layer_map = pdk.Deck(
+    layer_map_dark = pdk.Deck(
         layers=layer,
         initial_view_state=view,
     )
+    
+    layer_map_light = pdk.Deck(
+        layers=layer,
+        initial_view_state=view,
+        map_style='mapbox://styles/mapbox/light-v10',
+    )
+    
+    layer_map_earth = pdk.Deck(
+        layers=layer,
+        initial_view_state=view,
+        map_style=pdk.map_styles.SATELLITE,
+    )
 
-    st.pydeck_chart(layer_map)
+    st.pydeck_chart(layer_map_dark)
+    
+    show_map_light = st.checkbox('Show LightMap')
+    if show_map_light == True:
+        st.pydeck_chart(layer_map_light)
+        
+    show_map_earth = st.checkbox('Show EarthMap')
+    if show_map_earth == True:
+        st.pydeck_chart(layer_map_earth)
+        
+    df_pref_map_2 = df_pref_map.drop(columns=['集計年', '都道府県コード', '年齢', 'lat', 'lon'])
 
     show_df = st.checkbox('Show DataFrame')
     if show_df == True:
-        st.write(df_pref_map)
+        st.write(df_pref_map_2)
 
 def page2():
     st.header('■集計年別の一人当たり賃金（万円）の推移')
 
     df_ts_mean = df_jp_ind[(df_jp_ind['年齢'] == '年齢計')]
     df_ts_mean = df_ts_mean.rename(columns={'一人当たり賃金（万円）': '全国_一人当たり賃金（万円）'})
-
     df_pref_mean = df_pref_ind[(df_pref_ind['年齢'] == '年齢計')]
     pref_list = df_pref_mean['都道府県名'].unique()
     option_pref = st.selectbox(
@@ -116,7 +137,7 @@ st.text('出典：RESAS（地域経済分析システム）')
 st.text('本結果はRESAS（地域経済分析システム）を加工して生成')
 
 st.sidebar.header('目次')
-select1 = st.sidebar.checkbox('■2019年：一人当たり平均賃金のヒートマップ')
+select1 = st.sidebar.checkbox('■2020年（最新）：一人当たり平均賃金のヒートマップ')
 select2 = st.sidebar.checkbox('■集計年別の一人当たり賃金（万円）の推移')
 select3 = st.sidebar.checkbox('■年齢階級別の全国一人当たりの平均賃金（万円）')
 select4 = st.sidebar.checkbox('■産業別の賃金推移')
